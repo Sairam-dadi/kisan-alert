@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react';
-import { supabase } from './supabaseClient';
-import Auth from './Auth';
 import CropDiagnosis from './CropDiagnosis';
 
 const SOIL_TYPES = ['alluvial', 'black', 'red', 'clayey', 'sandy loam'];
@@ -16,8 +14,6 @@ function formatRupees(n) {
 }
 
 export default function App() {
-  const [session, setSession] = useState(null);
-  const [checkingSession, setCheckingSession] = useState(true);
   const [apiUrl, setApiUrl] = useState(
     () => localStorage.getItem('kisanAlertApiUrl') || DEFAULT_API_URL
   );
@@ -42,23 +38,6 @@ export default function App() {
   const [smsStatus, setSmsStatus] = useState(null);
   const [callRequesting, setCallRequesting] = useState(false);
   const [callStatus, setCallStatus] = useState(null);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setCheckingSession(false);
-    });
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-    });
-
-    return () => listener.subscription.unsubscribe();
-  }, []);
-
-  function handleSignOut() {
-    supabase.auth.signOut();
-  }
 
   useEffect(() => {
     localStorage.setItem('kisanAlertApiUrl', apiUrl);
@@ -171,48 +150,14 @@ export default function App() {
     ? Math.max(...result.ranked.map((c) => c.expected_profit))
     : 0;
 
-  if (checkingSession) {
-    return <div className="app"><p className="empty-state">Loading…</p></div>;
-  }
-
-  if (!session) {
-    return (
-      <div className="app">
-        <Auth onAuthed={setSession} />
-      </div>
-    );
-  }
-
   return (
     <div className="app">
       <div className="header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <p className="eyebrow">Kisan Alert</p>
-            <h1 className="title">Profit-oriented crop recommendation</h1>
-          </div>
-          <button
-            onClick={handleSignOut}
-            style={{
-              background: 'none',
-              border: '1px solid var(--border)',
-              borderRadius: 6,
-              padding: '6px 12px',
-              fontSize: 12,
-              color: 'var(--text-secondary)',
-              cursor: 'pointer',
-              flexShrink: 0,
-            }}
-          >
-            Sign out
-          </button>
-        </div>
+        <p className="eyebrow">Kisan Alert</p>
+        <h1 className="title">Profit-oriented crop recommendation</h1>
         <p className="subtitle">
           Enter your land and season details to see which crops are viable — ranked by
           expected profit, not just tradition.
-        </p>
-        <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>
-          Signed in as {session.user.email}
         </p>
         <div className="settings-row">
           <span>API endpoint</span>
@@ -475,7 +420,7 @@ export default function App() {
         </div>
       )}
 
-      <CropDiagnosis apiUrl={apiUrl} farmerEmail={session.user.email} farmerPhone={form.phoneNumber} />
+      <CropDiagnosis apiUrl={apiUrl} farmerEmail="" farmerPhone={form.phoneNumber} />
     </div>
   );
 }
