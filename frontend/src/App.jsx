@@ -7,7 +7,7 @@ const WATER_LEVELS = ['none', 'low', 'medium', 'high'];
 const SEASONS = ['kharif', 'rabi', 'zaid'];
 const LANGUAGES = ['English', 'Telugu', 'Hindi', 'Tamil'];
 
-const DEFAULT_API_URL = 'http://localhost:8080';
+const DEFAULT_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 function formatRupees(n) {
   return `₹${Number(n).toLocaleString('en-IN')}`;
